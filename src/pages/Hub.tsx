@@ -3,30 +3,15 @@ import { Button, HR, Table, Modal, TextInput, Label } from "flowbite-react";
 import Heading from "@components/heading";
 import InputError from "@components/inputError";
 import { useNavigate } from "react-router-dom";
-
-const projects = [
-  {
-    name: "Proyecto 1",
-    articles: 3,
-    lastModified: "Hace 2 días",
-  },
-  {
-    name: "Proyecto 2",
-    articles: 5,
-    lastModified: "Hace 3 días",
-  },
-  {
-    name: "Proyecto 3",
-    articles: 1,
-    lastModified: "Hace 4 días",
-  },
-]
+import { useAppDispatch, useAppSelector } from "@/hooks";
 
 type Data = {
   name: string;
 } | null;
 
 function Hub() {
+  const {projects} = useAppSelector((state) => state.projects);
+
   const [openModal, setOpenModal] = useState(false);
   const [errors, setErrors] = useState<Data>(null);
     const navigate = useNavigate();
@@ -77,10 +62,10 @@ function Hub() {
                 {project.name}
               </Table.Cell>
               <Table.Cell>
-                {project.articles}
+                {project.articleNumber}
               </Table.Cell>
               <Table.Cell>
-                {project.lastModified}
+                {project.lastUpdate}
               </Table.Cell>
               <Table.Cell className="flex justify-between">
                 <a href="#" className="font-medium text-cyan-600 hover:text-cyan-600 hover:underline dark:text-cyan-500">

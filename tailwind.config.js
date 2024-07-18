@@ -12,6 +12,9 @@ module.exports = {
       fontFamily: {
         raleway: ["raleway", "sans-serif"],
       },
+      maxWidth: {
+        "10/12": "83.333333%",
+      }
     },
   },
   plugins: [

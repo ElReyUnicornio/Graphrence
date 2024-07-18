@@ -10,6 +10,7 @@ export default defineConfig(async () => ({
       '@assets': path.resolve(__dirname, './src/assets'),
       '@components': path.resolve(__dirname, './src/components'),
       '@pages': path.resolve(__dirname, './src/pages'),
+      '@storage': path.resolve(__dirname, './src/storage'),
     },
   },
   plugins: [react()],

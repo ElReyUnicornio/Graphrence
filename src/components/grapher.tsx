@@ -75,6 +75,64 @@ const GraphEvents: React.FC = () => {
       mousedown: () => {
         if (!sigma.getCustomBBox()) sigma.setCustomBBox(sigma.getBBox());
       },
+      //Higjlight node on hover
+      enterNode: (e) => {
+        sigma.getGraph().forEachNode((node) => {
+          sigma.getGraph().setNodeAttribute(node, "color", "#f3f4f6");
+        });
+
+        sigma.getGraph().setNodeAttribute(e.node, "color", "#1e40af");
+        sigma.getGraph().setNodeAttribute(e.node, "size", 18);
+        sigma.getGraph().setNodeAttribute(e.node, "highlighted", false);
+
+        sigma.getGraph().forEachInNeighbor(e.node, (neighbor) => {
+          sigma.getGraph().setNodeAttribute(neighbor, "color", "#60a5fa");
+          sigma.getGraph().setNodeAttribute(neighbor, "size", 12);
+        });
+
+        sigma.getGraph().forEachOutNeighbor(e.node, (neighbor) => {
+          sigma.getGraph().setNodeAttribute(neighbor, "color", "#60a5fa");
+          sigma.getGraph().setNodeAttribute(neighbor, "size", 12);
+        });
+
+        sigma.getGraph().forEachInEdge(e.node, (edge) => {
+          sigma.getGraph().setEdgeAttribute(edge, "color", "#60a5fa");
+        });
+
+        sigma.getGraph().forEachOutEdge(e.node, (edge) => {
+          sigma.getGraph().setEdgeAttribute(edge, "color", "#60a5fa");
+        });
+        document.body.style.cursor = "pointer";
+      },
+      leaveNode: (e) => {
+        sigma.getGraph().forEachNode((node) => {
+          sigma.getGraph().setNodeAttribute(node, "color", "red");
+        });
+
+        sigma.getGraph().setNodeAttribute(e.node, "color", "red");
+        sigma.getGraph().setNodeAttribute(e.node, "size", 15);
+
+        sigma.getGraph().forEachInNeighbor(e.node, (neighbor) => {
+          sigma.getGraph().setNodeAttribute(neighbor, "color", "red");
+        });
+
+        sigma.getGraph().forEachOutNeighbor(e.node, (neighbor) => {
+          sigma.getGraph().setNodeAttribute(neighbor, "color", "red");
+        });
+
+        sigma.getGraph().forEachInEdge(e.node, (edge) => {
+          sigma.getGraph().setEdgeAttribute(edge, "color", "#f3f4f6");
+        });
+
+        sigma.getGraph().forEachOutEdge(e.node, (edge) => {
+          sigma.getGraph().setEdgeAttribute(edge, "color", "#f3f4f6");
+        });
+        document.body.style.cursor = "default";
+      },
+      // double click on node action
+      doubleClickNode: (e) => {
+        console.log("Node double clicked: ", e.node);
+      }
     });
   }, [registerEvents, sigma, draggedNode]);
 
