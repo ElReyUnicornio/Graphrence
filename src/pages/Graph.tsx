@@ -1,12 +1,17 @@
-import { Drawer } from "flowbite-react";
+import { Drawer, Modal } from "flowbite-react";
 import { useState } from "react";
 import ArticlesList from "./SideBar/ArticlesList";
 import Grapher from "@/components/grapher";
+import { useAppSelector, useAppDispatch } from "@/hooks";
+import { setDocumentModalOpen,  } from "@/storage/AppSlice";
+import pdf from "@assets/testPDF.pdf";
 
 const sigmaStyle = { height: "100vh", width: "100vw" };
 
 export default function GrapherPage() {
     const [open, setOpen] = useState(false)
+    const { documentModalOpen } = useAppSelector((state) => state.app)
+    const dispatch = useAppDispatch();
 
     return (
         <div>
@@ -44,6 +49,20 @@ export default function GrapherPage() {
                     <ArticlesList />
                 )}
             </Drawer>
+            
+            <Modal show={documentModalOpen}
+                size={"7xl"}
+                dismissible 
+                onClose={() => dispatch(setDocumentModalOpen(false))}>
+                <Modal.Header>
+                    <p className="font-raleway font-bold text-xl">Artículo 1</p>
+                </Modal.Header>
+                <Modal.Body className="min-h-[75vh] flex">
+                    <iframe src={pdf} className="w-full min-h-96 grow">
+                        Contenido del artículo 1
+                    </iframe>
+                </Modal.Body>
+            </Modal>
         </div>
     )
 }

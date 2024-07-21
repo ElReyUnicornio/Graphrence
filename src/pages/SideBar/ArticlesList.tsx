@@ -1,30 +1,19 @@
 import FileZone from "@/components/fileZone";
 import { Button, Modal } from "flowbite-react";
+import { setDocumentModalOpen, setSelectedDocument, setCurrentNode } from "@/storage/AppSlice";
 import { useState } from "react";
-import pdf from "@assets/testPDF.pdf"
+import { useAppDispatch, useAppSelector } from "@/hooks";
 
-const articles = [
-    {
-        name: "Artículo 1",
-        content: "Contenido del artículo 1"
-    },
-    {
-        name: "Artículo 2",
-        content: "Contenido del artículo 2"
-    },
-    {
-        name: "Artículo 3",
-        content: "Contenido del artículo 3"
-    }
-]
-
-// type props = {
-//     onOpenFile: (id:string) => {},
-// }
 
 export default function() {
-    const [openArticle, setOpenArticle] = useState(false)
-    const [openRead, setOpenRead] = useState(false)
+    const [openArticle, setOpenArticle] = useState(false);
+    const { articles } = useAppSelector((state) => state.articles);
+    const dispatch = useAppDispatch();
+
+    const handleOpenFile = (uid: string) => {
+        dispatch(setDocumentModalOpen(true));
+        dispatch(setSelectedDocument(uid));
+    }
 
     return (
         <div className="w-full h-full flex flex-col px-3 pt-3">
@@ -35,8 +24,12 @@ export default function() {
                 </svg>
                 Añadir artículo
             </Button>
-            {articles.map((article, index) => (
-                <button onDoubleClick={() => setOpenRead(true)} key={index} className="px-2 py-1 w-full h-8 mb-1 text-xs font-bold font-raleway text-start rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+            {articles.map((article) => (
+                <button onDoubleClick={() => handleOpenFile(article.uid)}
+                    onMouseEnter={() => dispatch(setCurrentNode(article.uid))}
+                    onMouseLeave={() => dispatch(setCurrentNode(0))}
+                    key={article.uid} 
+                    className="px-2 py-1 w-full h-8 mb-1 text-xs font-bold font-raleway text-start rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100">
                     {article.name}
                 </button>
             ))}
@@ -56,21 +49,6 @@ export default function() {
                         </Button>
                     </Modal.Footer>
                 </form>
-            </Modal>
-
-            {/* Read Modal */}
-            <Modal show={openRead}
-                size={"7xl"}
-                dismissible 
-                onClose={() => setOpenRead(false)}>
-                <Modal.Header>
-                    <p className="font-raleway font-bold text-xl">Artículo 1</p>
-                </Modal.Header>
-                <Modal.Body className="min-h-[75vh] flex">
-                    <iframe src={pdf} className="w-full min-h-96 grow">
-                        Contenido del artículo 1
-                    </iframe>
-                </Modal.Body>
             </Modal>
         </div>
     );
