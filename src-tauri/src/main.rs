@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use rusqlite::{params, Connection, Result};
-use base64::decode;
+use base64::{Engine as _, engine::general_purpose};
 use lopdf::Document;
 use regex::Regex;
 
@@ -59,7 +59,6 @@ fn get_projects() -> Result<Vec<String>, tauri::InvokeError> {
             println!("Error initializing database: {}", e);
             Err(tauri::InvokeError::from(e.to_string()))
         }
-    
     }
     
 }
@@ -134,42 +133,30 @@ fn extract_text_from_pdf(file_path: &str) -> Result<String, lopdf::Error> {
 }
 
 fn extract_references(text: &str) -> Vec<String> {
-    let references_start = text.find("Referencias").or_else(|| text.find("Bibliografía"));
-    if let Some(start) = references_start {
-        let references_text = &text[start..];
-        let reference_pattern = Regex::new(r"(\[?\d+\]?\s*[^\n]+\.\s*\d{4}\.)").unwrap();
-        let references: Vec<String> = reference_pattern
-            .find_iter(references_text)
-            .map(|m| m.as_str().to_string())
-            .collect();
-        references
-    } else {
-        vec![]
-    }
+    let original_pattern = Regex::new(r"\.([A-Za-z,\&\.\s]+)\.").unwrap();
+    let matches: Vec<&str> = original_pattern.captures_iter(&text)
+        .map(|cap| cap.get(1).unwrap().as_str())
+        .collect();
+
+    matches.iter().map(|m| m.to_string()).collect()
 }
 
 #[tauri::command]
 fn extract_references_from_pdf(title: String, content: String) -> Result<Vec<String>, tauri::InvokeError> {
-    match decode(&content) {
-        Ok(decoded) => {
-            let file_path = format!("files/{}.pdf", title);
+    let bytes = general_purpose::STANDARD
+    .decode(content).unwrap();
+    let file_path = format!("./files/{}.pdf", title);
 
-            match std::fs::write(&file_path, decoded).map_err(|e| e.to_string()) {
-                Ok(_) => {
-                    let text = extract_text_from_pdf(&file_path).ok().unwrap();
-                    let references = extract_references(&text);
-                    Ok(references)
-                },
-                Err(e) => {
-                    println!("Error writing file: {}", e);
-                    return Err(tauri::InvokeError::from(e));
-                }
-            }
-        }
-        Err(e) => {
-            println!("Error decoding base64: {}", e);
-            Err(tauri::InvokeError::from(e.to_string()))
+    match std::fs::write(&file_path, &bytes).map_err(|e| e.to_string()) {
+        Ok(_) => {
+            let text = extract_text_from_pdf(&file_path).ok().unwrap();
+            let references = extract_references(&text);
+            Ok(references)
         },
+        Err(e) => {
+            println!("Error writing file: {}", e);
+            return Err(tauri::InvokeError::from(e));
+        }
     }
 }
 
@@ -184,8 +171,17 @@ fn main() {
 #[test]
 fn testpdf() {
     print!("start --------------------------------------------------------------------");
-    let text = extract_text_from_pdf("files/Prueba.pdf").ok().unwrap();
-    print!("{}", text);
-    let references = extract_references(&text);
+    let text = extract_text_from_pdf("./files/Prueba.pdf").ok().unwrap();
+
+    let original_pattern = Regex::new(r"(?:\(([^)]*)\))+").unwrap();
+    let matches: Vec<&str> = original_pattern.captures_iter(&text)
+        .map(|cap| cap.get(1).unwrap().as_str())
+        .collect();
+    let original_string: String = matches.concat();
+
+    let references_text = original_string.split_at(original_string.find("References").unwrap() + "References".len());
+    println!("{:?}", references_text.1);
+
+    let references = extract_references(&references_text.1);
     println!("{:?}", references);
 }
